@@ -3,8 +3,6 @@ var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 // UI buttons selectors
 var start = document.querySelector('.start');
 var stop = document.querySelector('.stop');
-// var rangeSlider = document.querySelector('input');
-
 
 // Rain
 var rain = audioCtx.createRain();
@@ -19,13 +17,35 @@ var oscillatorGainNode = audioCtx.createGain();
 oscillator.connect(oscillatorGainNode);
 oscillatorGainNode.connect(audioCtx.destination);
 oscillator.type = 'sine';
-oscillator.frequency.setValueAtTime(25, audioCtx.currentTime); // value in hertz
+oscillator.frequency.setValueAtTime(432, audioCtx.currentTime); // value in hertz
+
+// Splitter
+var splitter = audioCtx.createChannelSplitter(2);
+oscillator.connect(splitter);
+var merger = audioCtx.createChannelMerger(2);
+
+// Reduce the volume of the left channel only
+// var gainNode = audioCtx.createGain();
+oscillatorGainNode.gain.setValueAtTime(5, audioCtx.currentTime);
+// oscillator.frequency.setValueAtTime(20, audioCtx.currentTime);
+splitter.connect(oscillatorGainNode, 0);
+
+
+// Connect the splitter back to the second input of the merger: we
+ // effectively swap the channels, here, reversing the stereo image.
+oscillatorGainNode.connect(merger, 0, 1);
+// oscillator.connect(merger, 0, 1);
+splitter.connect(merger, 1, 0);
+var dest = audioCtx.createMediaStreamDestination();
+merger.connect(audioCtx.destination);
+
 
 
 start.onclick = function() {
 	oscillator.start(audioCtx.currentTime);
 	console.log('started');
 	oscillatorGainNode.gain.value = 1;
+	oscillatorGainNode.connect(audioCtx.destination);
 	// oscillator.connect(audioCtx.destination);
 	// rainGain.gain.value = 1;
 }
@@ -34,15 +54,10 @@ stop.onclick = function() {
 	console.log('stopped');
 	oscillator.stop(audioCtx.currentTime);
 	oscillatorGainNode.gain.value = 0;
-	// oscillatorGainNode.disconnect(audioCtx.destination);
+	oscillatorGainNode.disconnect(audioCtx.destination);
 	// oscillator.disconnect(audioCtx.destination);
 	// rainGain.gain.value = 0;
 }
-
-
-// rangeSlider.oninput = function() {
-// }
-
 
 
 // Stereo Panner stuff WIP
@@ -62,23 +77,5 @@ stop.onclick = function() {
 // source.connect(panNode);
 // panNode.connect(audioCtx.destination);
 
-
-
-
-
-// mute button
-// var mute = document.querySelector('.mute');
-
-// mute.onclick = function() {
-//   if(mute.getAttribute('data-muted') === 'false') {
-//     oscillatorGainNode.disconnect(audioCtx.destination);
-//     mute.setAttribute('data-muted', 'true');
-//     mute.innerHTML = "Unmute";
-//   } else {
-//     oscillatorGainNode.connect(audioCtx.destination);
-//     mute.setAttribute('data-muted', 'false');
-//     mute.innerHTML = "Mute";
-//   };
-// }
 
 
