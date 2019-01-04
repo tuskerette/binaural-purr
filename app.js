@@ -1,3 +1,5 @@
+// This is me going with webkitAudioAPI from scratch
+
 var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 // UI buttons selectors
@@ -76,6 +78,3 @@ stop.onclick = function() {
 
 // source.connect(panNode);
 // panNode.connect(audioCtx.destination);
-
-
-
